@@ -5,19 +5,29 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const ethers = hre.ethers;
 
 async function main() {
-  const initBalance = 1;
-  const Assessment = await hre.ethers.getContractFactory("Assessment");
-  const assessment = await Assessment.deploy(initBalance);
-  await assessment.deployed();
+  // Ensure the ABI is correctly imported
+  const CharityDonationABI = require("../artifacts/contracts/CharityDonation.sol/CharityDonation.json").abi;
 
-  console.log(`A contract with balance of ${initBalance} eth deployed to ${assessment.address}`);
+  // Deploy the contract
+  const CharityDonationFactory = await ethers.getContractFactory("CharityDonation", CharityDonationABI);
+  const CharityDonation = await CharityDonationFactory.deploy();  // Deploy the contract
+  await CharityDonation.deployed();  // Wait for deployment confirmation
+
+  console.log(`CharityDonation contract deployed to: ${CharityDonation.address}`);  // Log deployment address
+
+  // Example: interact with the deployed contract
+  const goalAmount = 100;
+  await CharityDonation.defineGoal(goalAmount);  // Example interaction: define the goal amount
+  console.log(`Initial goal defined: ${goalAmount} ETH`);  // Log the initial goal amount
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// Ensure the script properly handles errors
+main()
+  .then(() => process.exit(0))  // Exit with success code if script runs without errors
+  .catch((error) => {
+    console.error(error);  // Log any errors that occur during script execution
+    process.exit(1);  // Exit with error code
+  });
